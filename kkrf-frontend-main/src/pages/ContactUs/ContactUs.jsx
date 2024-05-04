@@ -1,118 +1,136 @@
 import React, { useState } from "react";
-import axios from "axios";
 
 const ContactUs = () => {
-  const [userdata, setData] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     phno: "",
     email: "",
     query: "",
   });
 
+  // Handle form data changes
   const collectData = (e) => {
-    // console.log(  e.target.value )
-
-    setData({ ...userdata, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value }); // Update form data
   };
 
+  // Handle form submission
   const submitData = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form behavior
 
-    if (userdata.name === "") {
-      return alert("please fill all form");
+    // Form validation checks
+    if (!formData.name) {
+      return alert("Please enter your name.");
     }
-
-    if (userdata.email === "" || !userdata.email.includes("@")) {
-      return alert("please fill email correct");
+    if (!formData.email || !formData.email.includes("@")) {
+      return alert("Please enter a valid email.");
     }
-
-    if (userdata.phno === "") {
-      return alert("please type phno");
+    if (!formData.phno) {
+      return alert("Please enter your phone number.");
     }
-
-    if (userdata.query === "") {
-      return alert("please type query");
+    if (!formData.query) {
+      return alert("Please enter your query.");
     }
-
-    e.preventDefault();
 
     try {
-      const { data } = await axios.post(
-        "http://localhost:4000/user/addForm",
-        userdata
-      );
+      // Send form data to backend
+      const response = await fetch("http://localhost/reactdatabase/contactus.php", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json", // Ensure correct content type
+  },
+  body: JSON.stringify(formData), // Convert form data to JSON
+});
 
-      if (data.sucess === true) {
-        alert(data.message);
-      } else {
-        alert(data.message);
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-    } catch (e) {
-      alert(data.message);
+
+      const data = await response.json(); // Parse server response
+
+      if (data.success) {
+        alert("Form submitted successfully!"); // Success message
+        setFormData({
+          name: "",
+          phno: "",
+          email: "",
+          query: "",
+        }); // Reset form fields
+      } else {
+        alert(data.message || "Form submission failed.");
+      }
+
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
   return (
     <div className="container h-screen">
-      <div className=" h-full mt-16">
-        <div>
-          <h1 className="text-colorTwo font-bold text-6xl">Contact us</h1>
-          <div className="mt-4 text-xl">
-            "Reach out to us. Your message matters"
-          </div>
-        </div>
-
+      <div className="h-full mt-16">
+        <h1 className="text-colorTwo font-bold text-6xl">Contact Us</h1>
+        <div className="mt-4 text-xl">"Reach out to us. Your message matters."</div>
+        
         <div className="h-full rounded-lg overflow-hidden mt-9 md:max-w-[600px]">
-          <form onSubmit={submitData} action="" className="space-y-6">
+          <form onSubmit={submitData} className="space-y-6"> {/* Form submission */}
+            {/* Name field */}
             <div>
-              <div>Name</div>
+              <label>Name</label>
               <input
                 type="text"
                 className="border border-gray-500 p-3"
-                placeholder="your name"
+                placeholder="Your name"
                 name="name"
-                id=""
-                onChange={(e) => collectData(e)}
+                value={formData.name}
+                onChange={collectData} // Collect form data
               />
             </div>
 
+            {/* Email field */}
             <div>
-              <div>Email</div>
+              <label>Email</label>
               <input
                 type="text"
                 className="border border-gray-500 p-3"
                 name="email"
-                id=""
-                placeholder="your email"
-                onChange={(e) => collectData(e)}
+                placeholder="Your email"
+                value={formData.email}
+                onChange={collectData}
               />
             </div>
 
+            {/* Phone field */}
             <div>
-              <div>Phone</div>
+              <label>Phone</label>
               <input
                 type="number"
                 className="border border-gray-500 p-3"
                 name="phno"
-                id=""
-                placeholder="your phno"
-                onChange={(e) => collectData(e)}
+                placeholder="Your phone number"
+                value={formData.phno}
+                onChange={collectData}
               />
             </div>
 
+            {/* Query field */}
             <div>
-              <div>Query</div>
+              <label>Query</label>
               <textarea
-                id=""
-                cols="30"
-                rows="10"
-                onChange={(e) => collectData(e)}
                 name="query"
+                placeholder="Your query"
+                value={formData.query}
+                onChange={collectData}
                 className="border w-full rounded-2xl border-gray-500 p-3"
               ></textarea>
             </div>
 
-            <button className="bg-colorThree  px-8 py-3 text-white font-semibold  text-xs rounded-full  mt-9 inline-block">
+            {/* Submit button */}
+            <button
+              type="submit"
+              className="bg-colorThree px-8 py-3 text-white font-semibold text-xs rounded-full mt-9 inline-block"
+            >
               Submit
             </button>
           </form>
